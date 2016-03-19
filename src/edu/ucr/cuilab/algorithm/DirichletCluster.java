@@ -85,23 +85,23 @@ public class DirichletCluster {
 
 		List<Double> alphaList = new ArrayList<Double>();
 		String input = "/home/xinping/Desktop/6008/5_2345Borr.txt.sample";
-//		String input = "/home/xinping/Desktop/6008/test.txt";
-//		String input = "/home/xinping/Desktop/6008/5_2345Borr.txt";
+		// String input = "/home/xinping/Desktop/6008/test.txt";
+		// String input = "/home/xinping/Desktop/6008/5_2345Borr.txt";
 		String output = null;
-				
 
 		Date date = new Date();
 
 		Params params = new Params(particles, neighbor, seqs, transOrder,
-				majority, threshold, alpha, alphaLow, alphaHigh, zero);
+				majority, threshold, alpha, alphaLow, alphaHigh, zero,
+				DefaultConstants.TESTNUM, DefaultConstants.COVERAGE);
 
 		if (0 == args.length) {
 			printHelp();
 			alphaList.add(0.00000001);
 			alphaList.add(0.000001);
-			//alphaList.add(0.000075);
+			// alphaList.add(0.000075);
 			// alphaList.add(0.1);
-			//return;
+			// return;
 		}
 
 		int pos = 0;
@@ -191,7 +191,7 @@ public class DirichletCluster {
 				pos++;
 			}
 		}
-		
+
 		if (null == output) {
 			output = input + "." + date.toString() + ".output";
 		}
@@ -238,7 +238,8 @@ public class DirichletCluster {
 				.println("\t-t:\tThe value followed will be the threshold parameter");
 		System.out
 				.println("\t   \tDefault value " + DefaultConstants.THRESHOLD);
-		System.out.println("\t-u:\tThe string followed will be the output file");
+		System.out
+				.println("\t-u:\tThe string followed will be the output file");
 		System.out
 				.println("\t   \tDefault value is the input file name with additional time");
 		System.out.println("\t-z:\tThe value followed will be zero parameter");
@@ -316,10 +317,10 @@ public class DirichletCluster {
 
 			System.out.println((new Date()).toString()
 					+ "\tDirichlet single round begin");
-			
-//			for (Set<Integer> set:subOverlapList) {
-//				System.out.println(set.toString());
-//			}
+
+			// for (Set<Integer> set:subOverlapList) {
+			// System.out.println(set.toString());
+			// }
 
 			int[] subResult = DirichletClusterSingle.dirichletClusterSingle(
 					subDoubleReadList, subOverlapList, tempParams,

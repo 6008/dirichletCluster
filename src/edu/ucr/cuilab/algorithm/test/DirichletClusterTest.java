@@ -602,8 +602,8 @@ public class DirichletClusterTest {
 			seqNum += overlapResult.get(key).size();
 			double entropy = 0.0;
 			for (Integer temp : tempMap.keySet()) {
-				 System.out.println(String.valueOf(temp) + "\t" +
-				 String.valueOf(tempMap.get(temp)));
+				System.out.println(String.valueOf(temp) + "\t"
+						+ String.valueOf(tempMap.get(temp)));
 				entropy -= tempMap.get(temp)
 						* Math.log((tempMap.get(temp) + 0.0)
 								/ overlapResult.get(key).size());
@@ -763,7 +763,8 @@ public class DirichletClusterTest {
 		for (double alphaHigh : alphaHighArr) {
 
 			Params params = new Params(particles, neighbor, seqs, transOrder,
-					majority, threshold, alpha, alphaLow, alphaHigh, zero);
+					majority, threshold, alpha, alphaLow, alphaHigh, zero,
+					DefaultConstants.TESTNUM, DefaultConstants.COVERAGE);
 
 			int[] zMode = new int[params.getSeqs()];
 			for (int i = 0; i < params.getSeqs(); i++) {
@@ -788,7 +789,7 @@ public class DirichletClusterTest {
 			} else {
 				zMode = dirichletCluster(doubleReadList, overlapList, zMode,
 						params, pw);
-		}
+			}
 		}
 		pw.close();
 	}

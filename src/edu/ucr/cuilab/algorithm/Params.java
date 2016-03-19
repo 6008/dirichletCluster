@@ -12,7 +12,8 @@ public class Params implements Cloneable {
 	private double alphaLow;
 	private double alphaHigh;
 	private double zero;
-	
+	private int forTest;
+	private double coverage;
 	public Params() {
 		super();
 	}
@@ -29,11 +30,13 @@ public class Params implements Cloneable {
 		this.alphaLow = param.getAlphaLow();
 		this.alphaHigh = param.getAlphaHigh();
 		this.zero = param.getZero();
+		this.forTest = param.getForTest();
+		this.coverage = param.getCoverage();
 	}
 
 	public Params(int particles, int neighbor, int seqs, int transOrder,
 			double majority, double threshold, double alpha, double alphaLow,
-			double alphaHigh, double zero) {
+			double alphaHigh, double zero, int forTest, double coverage) {
 		super();
 		this.particles = particles;
 		this.neighbor = neighbor;
@@ -45,6 +48,24 @@ public class Params implements Cloneable {
 		this.alphaLow = alphaLow;
 		this.alphaHigh = alphaHigh;
 		this.zero = zero;
+		this.forTest = forTest;
+		this.coverage = coverage;
+	}
+
+	public double getCoverage() {
+		return coverage;
+	}
+
+	public void setCoverage(double coverage) {
+		this.coverage = coverage;
+	}
+
+	public int getForTest() {
+		return forTest;
+	}
+
+	public void setForTest(int forTest) {
+		this.forTest = forTest;
 	}
 
 	public int getParticles() {
