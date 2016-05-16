@@ -89,7 +89,7 @@ public class DirichletClusterEvol {
 		List<Double> alphaList = new ArrayList<Double>();
 		// String input = "/home/xinping/Desktop/6008/5_2345Borr.txt.sample";
 		String input = "/home/xinping/Desktop/6008/5_test.txt";
-		// String input = "/home/xinping/Desktop/6008/5_2345Borr.txt";
+//		 String input = "/home/xinping/Desktop/6008/5_2345Borr.txt";
 		String output = null;
 
 		Date date = new Date();
@@ -591,7 +591,7 @@ public class DirichletClusterEvol {
 				params.getParticles());
 		tempAccumCountList = DirichletClusterSingle.rebuildCountLists(
 				doubleReadList, z, params.getParticles());
-		System.out.println(Arrays.toString(DirichletClusterSingle.getMode(z)));
+//		System.out.println(Arrays.toString(DirichletClusterSingle.getMode(z)));
 
 		System.out.print("Removed:");
 		Map<Integer, Integer> tempMap = new HashMap<Integer, Integer>();
@@ -707,7 +707,7 @@ public class DirichletClusterEvol {
 			System.out.println();
 			System.out.println();
 		}
-		System.out.println(Arrays.toString(DirichletClusterSingle.getMode(z)));
+//		System.out.println(Arrays.toString(DirichletClusterSingle.getMode(z)));
 
 		for (Set<Integer> overlap : rmList) {
 			int[][] tempZLower = DirichletClusterSingle.clusterOverlapSeqs(
@@ -788,7 +788,7 @@ public class DirichletClusterEvol {
 			System.out.println();
 			System.out.println();
 		}
-		System.out.println(Arrays.toString(DirichletClusterSingle.getMode(z)));
+		//System.out.println(Arrays.toString(DirichletClusterSingle.getMode(z)));
 		return null;
 	}
 
@@ -1124,8 +1124,16 @@ public class DirichletClusterEvol {
 			List<Set<Integer>> overlapList, int[] zMode, Params params)
 			throws CloneNotSupportedException {
 		params.setAlphaHigh(10);
-		params.setAlpha(0.00000001);
-		params.setAlphaLow(0.00000001);
+		params.setAlpha(0.000001);
+		params.setAlphaLow(0.000001);
+		dirichletClusterSingleV1(doubleReadList, overlapList, params, 0);
+		params.setAlphaHigh(1);
+		dirichletClusterSingleV1(doubleReadList, overlapList, params, 0);
+		params.setAlphaHigh(0.1);
+		dirichletClusterSingleV1(doubleReadList, overlapList, params, 0);
+		params.setAlphaHigh(0.01);
+		dirichletClusterSingleV1(doubleReadList, overlapList, params, 0);
+		params.setAlphaHigh(0.001);
 		dirichletClusterSingleV1(doubleReadList, overlapList, params, 0);
 	}
 

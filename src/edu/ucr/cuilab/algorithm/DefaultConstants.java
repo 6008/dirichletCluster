@@ -12,11 +12,13 @@ public interface DefaultConstants {
 	public final static double ALPHAHIGH = 0.01;
 	public final static double THRESHOLD = 0.9;
 	public final static double MAJORITY = 0.5;
-	public final static double ZERO = 0.00000001;
+	public final static double ZERO = 0.0000000001;
 	
 	public final static int WLEN = 32;
 	
 	public final static double COVERAGE = 0.5;
 	
 	public final static int TESTNUM = 5;
+	
+	public final static int CHARSETSIZE = 4;
 }

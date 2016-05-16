@@ -1,9 +1,12 @@
 package edu.ucr.cuilab.algorithm;
 
-import java.util.Date;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +15,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 public class DirichletClusterSingle {
+
+	public static long[] timeArr = new long[2];
 
 	public static void newGroup(List<DoubleRead> doubleReadList, int neighbor) {
 		Collections.sort(doubleReadList, new DoubleReadCompareGC());
@@ -53,6 +58,7 @@ public class DirichletClusterSingle {
 
 		}
 		Collections.sort(doubleReadList, new DoubleReadCompareID());
+		
 	}
 
 	public static int[] compressResult(int[] datas) {
@@ -227,8 +233,8 @@ public class DirichletClusterSingle {
 
 	private static double[] priorP(List<Map<Integer, Integer>> groupMapList,
 			int seqIndex, int[][] z, double[] w, int particles, double alpha,
-			int completeSeqCount) {
-		int group = max(z);
+			int completeSeqCount, int group) {
+		// int group = max(z);
 		double[][] pList = new double[particles][group + 1];
 		double[] colSum = new double[group + 1];
 		for (int j = 0; j < group + 1; j++) {
@@ -500,8 +506,8 @@ public class DirichletClusterSingle {
 	private static double[][][] startP(
 			List<Map<Integer, List<Integer>>> countLists,
 			List<DoubleRead> doubleReadList, int seqIndex, int[][] z,
-			int particles) {
-		int group = max(z);
+			int particles, int group) {
+		// int group = max(z);
 		double[][][] p = new double[particles][group + 1][];
 		double[] newStartP = doubleReadList.get(seqIndex).getNewGroupStartp();
 		for (int k = 0; k < particles; k++) {
@@ -519,8 +525,8 @@ public class DirichletClusterSingle {
 	private static double[][][] transP(
 			List<Map<Integer, List<Integer>>> countLists,
 			List<DoubleRead> doubleReadList, int seqIndex, int[][] z,
-			int particles) {
-		int group = max(z);
+			int particles, int group) {
+		// int group = max(z);
 		double[] newTransP = doubleReadList.get(seqIndex).getNewGroupTransp();
 		double[][][] p = new double[particles][group + 1][];
 		for (int k = 0; k < particles; k++) {
@@ -538,22 +544,22 @@ public class DirichletClusterSingle {
 	private static double[] postPTemp(
 			List<Map<Integer, List<Integer>>> countLists,
 			List<DoubleRead> doubleReadList, int seqIndex, int[][] z,
-			double[] w, int particles) {
+			double[] w, int particles, int group) {
 
-		int group = max(z);
+		// int group = max(z);
 
 		Date date1 = new Date();
 		double[][][] tempTransP = transP(countLists, doubleReadList, seqIndex,
-				z, particles);
+				z, particles, group);
 		Date date2 = new Date();
 		// System.out.println("transP " + (date2.getTime() - date1.getTime()));
 		double[][][] tempStartP = startP(countLists, doubleReadList, seqIndex,
-				z, particles);
+				z, particles, group);
 		Date date3 = new Date();
 		// System.out.println("tempStartP " + (date3.getTime() -
 		// date2.getTime()));
-		// System.out.println(Arrays.toString(tempStartP[0][0]));
-		// System.out.println(Arrays.toString(tempStartP[0][1]));
+		timeArr[0] += date2.getTime() - date1.getTime();
+		timeArr[1] += date3.getTime() - date2.getTime();
 
 		double[][] p = new double[particles][group + 1];
 		double[] result = new double[group + 1];
@@ -576,7 +582,8 @@ public class DirichletClusterSingle {
 					double tempSum = 0.0;
 					for (int i = 0; i < temp.length; i++) {
 						if (temp[i] < Double.MIN_NORMAL) {
-							tempSum += countList.get(i) * DefaultConstants.ZERO;
+							tempSum += countList.get(i)
+									* Math.log(DefaultConstants.ZERO);
 						} else {
 							tempSum += countList.get(i) * Math.log(temp[i]);
 						}
@@ -619,6 +626,39 @@ public class DirichletClusterSingle {
 		// System.out.println(Arrays.toString(tempPriorP));
 		double sum = 0.0;
 		for (int i = 0; i < p.length; i++) {
+			p[i] = tempPostP[i] * tempPriorP[i] + Double.MIN_NORMAL;
+			sum += p[i];
+		}
+		// if (sum < Double.MIN_NORMAL) {
+		// sum = Double.MIN_NORMAL;
+		// }
+		for (int i = 0; i < p.length; i++) {
+			p[i] /= sum;
+		}
+		return p;
+	}
+
+	private static double[] postP(List<Map<Integer, Integer>> groupCount,
+			List<Map<Integer, List<Integer>>> countLists,
+			List<DoubleRead> doubleReadList, int seqIndex, int[][] z,
+			double[] w, int particles, double alpha, int completeSeqCount) {
+		int group = max(z);
+		double[] p = new double[group + 1];
+		double[] tempPostP = postPTemp(countLists, doubleReadList, seqIndex, z,
+				w, particles, group);
+
+		// Date date = new Date();
+		// System.out.println(seqIndex);
+		// System.out.println(doubleReadList.get(seqIndex).getCountList()
+		// .toString());
+		// System.out.println(Arrays.toString(tempPostP));
+		double[] tempPriorP = priorP(groupCount, seqIndex, z, w, particles,
+				alpha, completeSeqCount, group);
+		// System.out.println(Arrays.toString(tempPriorP));
+		// System.out.println("priorP "
+		// + ((new Date()).getTime() - date.getTime()));
+		double sum = 0.0;
+		for (int i = 0; i < p.length; i++) {
 			p[i] = tempPostP[i] * tempPriorP[i];
 			sum += p[i];
 		}
@@ -634,11 +674,12 @@ public class DirichletClusterSingle {
 	private static double[] postP(List<Map<Integer, Integer>> groupCount,
 			List<Map<Integer, List<Integer>>> countLists,
 			List<DoubleRead> doubleReadList, int seqIndex, int[][] z,
-			double[] w, int particles, double alpha, int completeSeqCount) {
-		int group = max(z);
+			double[] w, int particles, double alpha, int completeSeqCount,
+			int group) {
+		// int group = max(z);
 		double[] p = new double[group + 1];
 		double[] tempPostP = postPTemp(countLists, doubleReadList, seqIndex, z,
-				w, particles);
+				w, particles, group);
 
 		// Date date = new Date();
 		// System.out.println(seqIndex);
@@ -646,7 +687,7 @@ public class DirichletClusterSingle {
 		// .toString());
 		// System.out.println(Arrays.toString(tempPostP));
 		double[] tempPriorP = priorP(groupCount, seqIndex, z, w, particles,
-				alpha, completeSeqCount);
+				alpha, completeSeqCount, group);
 		// System.out.println(Arrays.toString(tempPriorP));
 		// System.out.println("priorP "
 		// + ((new Date()).getTime() - date.getTime()));
@@ -686,7 +727,7 @@ public class DirichletClusterSingle {
 		return samples;
 	}
 
-	private static int[] clusterOneSeq(List<DoubleRead> doubleReadList,
+	public static int[] clusterOneSeq(List<DoubleRead> doubleReadList,
 			int seqIndex, int[][] z, double[] w, int particles, double alpha,
 			int completeSeqCount) {
 		double[] posterior = postP(doubleReadList, seqIndex, z, w, particles,
@@ -698,12 +739,29 @@ public class DirichletClusterSingle {
 		return sample;
 	}
 
-	private static int[] clusterOneSeq(List<Map<Integer, Integer>> groupCount,
+	public static int[] clusterOneSeq(List<Map<Integer, Integer>> groupCount,
 			List<Map<Integer, List<Integer>>> countLists,
 			List<DoubleRead> doubleReadList, int seqIndex, int[][] z,
 			double[] w, int particles, double alpha, int completeSeqCount) {
 		double[] posterior = postP(groupCount, countLists, doubleReadList,
 				seqIndex, z, w, particles, alpha, completeSeqCount);
+
+		// Date date = new Date();
+		// System.out.println(Arrays.toString(posterior));
+		int[] sample = sampleInt(posterior, particles, 1);
+		// System.out.println(Arrays.toString(sample));
+		// System.out.println("sampleInt "
+		// + ((new Date()).getTime() - date.getTime()));
+		return sample;
+	}
+
+	public static int[] clusterOneSeq(List<Map<Integer, Integer>> groupCount,
+			List<Map<Integer, List<Integer>>> countLists,
+			List<DoubleRead> doubleReadList, int seqIndex, int[][] z,
+			double[] w, int particles, double alpha, int completeSeqCount,
+			int group) {
+		double[] posterior = postP(groupCount, countLists, doubleReadList,
+				seqIndex, z, w, particles, alpha, completeSeqCount, group);
 
 		// Date date = new Date();
 		// System.out.println(Arrays.toString(posterior));
@@ -746,11 +804,13 @@ public class DirichletClusterSingle {
 	public static double[] updateWeights(
 			List<Map<Integer, List<Integer>>> countLists,
 			List<DoubleRead> doubleReadList, int seqIndex, int[][] z,
-			double[] w, int particles) {
+			double[] w, int particles, int group) {
+
+		// int group = max(z);
 		double[][][] tempTransP = transP(countLists, doubleReadList, seqIndex,
-				z, particles);
+				z, particles, group);
 		double[][][] tempStartP = startP(countLists, doubleReadList, seqIndex,
-				z, particles);
+				z, particles, group);
 
 		double[] p = new double[particles];
 
@@ -759,10 +819,13 @@ public class DirichletClusterSingle {
 		List<Integer> countList = doubleReadList.get(seqIndex).getCountList();
 		for (int k = 0; k < particles; k++) {
 			double[] temp = tempTransP[k][z[seqIndex][k] - 1];
+			// System.out.println(z[seqIndex][k]);
+			// System.out.println(Arrays.toString(temp));
 			double tempSum = 0.0;
 			for (int i = 0; i < temp.length; i++) {
 				if (temp[i] < Double.MIN_NORMAL) {
-					tempSum += countList.get(i) * DefaultConstants.ZERO;
+					tempSum += countList.get(i)
+							* Math.log(DefaultConstants.ZERO);
 				} else {
 					tempSum += countList.get(i) * Math.log(temp[i]);
 				}
@@ -771,7 +834,14 @@ public class DirichletClusterSingle {
 			for (int i = 0; i < startWhere.length; i++) {
 				p[k] *= tempStartP[k][z[seqIndex][k] - 1][startWhere[i]];
 			}
+			p[k] += Double.MIN_NORMAL;
 		}
+		// System.out.println(Arrays.toString(tempStartP[0][0]));
+		// System.out.println(Arrays.toString(tempStartP[0][1]));
+		// System.out.println(Arrays.toString(tempTransP[0][0]));
+		// System.out.println(Arrays.toString(tempTransP[0][1]));
+		// System.out.println(countList.toString());
+		// System.out.println(Arrays.toString(p));
 
 		double sum = 0.0;
 		for (double elem : p) {
